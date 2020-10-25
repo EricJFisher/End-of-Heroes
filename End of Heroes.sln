@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "End of Heroes", "End of Heroes\End of Heroes.csproj", "{371A83EA-C2C8-4DE8-B634-3B387C18665E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{371A83EA-C2C8-4DE8-B634-3B387C18665E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{371A83EA-C2C8-4DE8-B634-3B387C18665E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{371A83EA-C2C8-4DE8-B634-3B387C18665E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{371A83EA-C2C8-4DE8-B634-3B387C18665E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {67EE1134-E35B-4EBF-968E-91EDE9C6C569}
+	EndGlobalSection
+EndGlobal
