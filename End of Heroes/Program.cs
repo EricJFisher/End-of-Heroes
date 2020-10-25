@@ -1,14 +1,24 @@
-﻿using System;
+﻿using EndOfHeroes.Services;
+using System;
 
-namespace End_of_Heroes
+namespace EndOfHeroes
 {
     public static class Program
     {
         [STAThread]
         static void Main()
         {
-            using (var game = new Game1())
-                game.Run();
+            CrashHandler.Bind();
+
+            try
+            {
+                using (var game = new Desktop())
+                    game.Run();
+            }
+            catch (Exception e)
+            {
+                CrashHandler.Report(e);
+            }
         }
     }
 }
