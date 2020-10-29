@@ -23,7 +23,6 @@ namespace DystopiaEngine
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-
             ScreenWidth = Graphics.PreferredBackBufferWidth;
             ScreenHeight = Graphics.PreferredBackBufferHeight;
 
