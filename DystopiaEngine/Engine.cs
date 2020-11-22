@@ -1,13 +1,25 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DystopiaEngine.Components;
+using DystopiaEngine.Systems;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
+using MonoGame.Extended.BitmapFonts;
+using MonoGame.Extended.Entities;
+using System;
 
 namespace DystopiaEngine
 {
     public class Engine : Game
     {
-        public static GraphicsDeviceManager Graphics;
-        public static SpriteBatch SpriteBatch;
+        private readonly GraphicsDeviceManager _graphicsDeviceManager;
+        private readonly FramesPerSecondCounter _framesPerSecondCounter = new FramesPerSecondCounter();
+        private readonly Random _random = new Random();
+
+        private EntityFactory entityFactory;
+        private SpriteBatch spriteBatch;
+        private BitmapFont font;
+        private World _world;
 
         public Texture2D Texture;
         public Vector2 Position;
@@ -20,11 +32,21 @@ namespace DystopiaEngine
 
         public Engine()
         {
-            Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            IsMouseVisible = true;
+            Window.AllowUserResizing = false;
+            IsFixedTimeStep = true;
 
-            ScreenWidth = Graphics.PreferredBackBufferWidth;
-            ScreenHeight = Graphics.PreferredBackBufferHeight;
+            _graphicsDeviceManager = new GraphicsDeviceManager(this)
+            {
+                IsFullScreen = false,
+                PreferredBackBufferWidth = 800,
+                PreferredBackBufferHeight = 600,
+                PreferredBackBufferFormat = SurfaceFormat.Color,
+                PreferMultiSampling = false,
+                PreferredDepthStencilFormat = DepthFormat.None,
+                SynchronizeWithVerticalRetrace = true
+            };
 
             Position = new Vector2(0, 0);
             HudPosition = new Vector2(ScreenWidth / 2 - 64, ScreenHeight - 128);
@@ -37,11 +59,20 @@ namespace DystopiaEngine
 
         protected override void LoadContent()
         {
-            SpriteBatch = new SpriteBatch(GraphicsDevice);
-            Texture = Content.Load<Texture2D>("placeholder");
-            HudTexture = Content.Load<Texture2D>("vitals");
+            entityFactory = new EntityFactory();
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            font = Content.Load<BitmapFont>("montserrat-32");
 
-            base.LoadContent();
+            _world = new WorldBuilder()
+                .AddSystem(new HealthBarRenderSystem(spriteBatch, font))
+                .AddSystem(new HudRenderSystem(GraphicsDevice, spriteBatch, font))
+                .AddSystem(new PlayerControlSystem(entityFactory))
+                .AddSystem(new RenderSystem(spriteBatch, Content))
+                .Build();
+
+            entityFactory.World = _world;
+
+            InitializePlayer();
         }
 
         protected override void UnloadContent()
@@ -51,32 +82,39 @@ namespace DystopiaEngine
 
         protected override void Update(GameTime gameTime)
         {
-            KeyboardState state = Keyboard.GetState();
-            if (state.IsKeyDown(Keys.Escape))
+            var keyboard = Keyboard.GetState();
+
+            if (keyboard.IsKeyDown(Keys.Escape))
                 Exit();
 
-            if (state.IsKeyDown(Keys.Right))
-                Position.X += 10;
-            if (state.IsKeyDown(Keys.Left))
-                Position.X -= 10;
-            if (state.IsKeyDown(Keys.Up))
-                Position.Y -= 10;
-            if (state.IsKeyDown(Keys.Down))
-                Position.Y += 10;
-
-            base.Update(gameTime);
+            _framesPerSecondCounter.Update(gameTime);
+            _world.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            _framesPerSecondCounter.Draw(gameTime);
+            var fps = $"FPS: {_framesPerSecondCounter.FramesPerSecond}";
+
             GraphicsDevice.Clear(Color.Black);
 
-            SpriteBatch.Begin();
-            SpriteBatch.Draw(Texture, Position, Color.White);
-            SpriteBatch.Draw(HudTexture, HudPosition, Color.White);
-            SpriteBatch.End();
+            spriteBatch.Begin();
 
-            base.Draw(gameTime);
+            _world.Draw(gameTime);
+
+            spriteBatch.DrawString(font, fps, new Vector2(16, 16), Color.White);
+
+            spriteBatch.End();
+        }
+
+        private void InitializePlayer()
+        {
+            var viewport = GraphicsDevice.Viewport;
+
+            var entity = _world.CreateEntity();
+            entity.Attach(new Transform2(x: viewport.Width * 0.5f, y: viewport.Height - 50f));
+            entity.Attach(new SpatialFormComponent { SpatialFormFile = "Player" });
+            entity.Attach(new PlayerComponent());
         }
     }
 }
