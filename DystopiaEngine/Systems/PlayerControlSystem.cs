@@ -83,7 +83,7 @@ namespace DystopiaEngine.Systems
                 direction.Normalize();
 
             var speed = 400;
-            transform.Position += direction * 400 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            transform.Position += direction * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             _lastState = keyboard;
         }
