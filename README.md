@@ -31,8 +31,8 @@ Enemies in EoH will consist of animals, other monsters, humans, etc. Not all ani
 
 EoH uses the following technologies:
  - MonoGame 3.8.0.1641
- - .NET Core 3.1
- - C# 8.0
+ - .NET 5
+ - C# 9.0
  - OpenGL 2 (Via Monogame's DesktopGL) _Note: I would actually like to give Vulkan a go once Monogame supports it._
 
 ## Why Open Source? ##
