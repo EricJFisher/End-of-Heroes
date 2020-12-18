@@ -1,11 +1,6 @@
-﻿using DystopiaEngine.Components;
-using DystopiaEngine.Systems;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended;
-using MonoGame.Extended.BitmapFonts;
-using MonoGame.Extended.Entities;
 using System;
 
 namespace DystopiaEngine
@@ -13,19 +8,12 @@ namespace DystopiaEngine
     public class Engine : Game
     {
         private readonly GraphicsDeviceManager _graphicsDeviceManager;
-        private readonly FramesPerSecondCounter _framesPerSecondCounter = new FramesPerSecondCounter();
         private readonly Random _random = new Random();
 
-        private EntityFactory entityFactory;
         private SpriteBatch spriteBatch;
-        private BitmapFont font;
-        private World _world;
 
-        public Texture2D Texture;
-        public Vector2 Position;
-
-        public Texture2D HudTexture;
-        public Vector2 HudPosition;
+        private Texture2D texture;
+        private Vector2 position;
 
         public static int ScreenWidth;
         public static int ScreenHeight;
@@ -35,86 +23,67 @@ namespace DystopiaEngine
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Window.AllowUserResizing = false;
-            IsFixedTimeStep = true;
 
-            _graphicsDeviceManager = new GraphicsDeviceManager(this)
-            {
-                IsFullScreen = false,
-                PreferredBackBufferWidth = 800,
-                PreferredBackBufferHeight = 600,
-                PreferredBackBufferFormat = SurfaceFormat.Color,
-                PreferMultiSampling = false,
-                PreferredDepthStencilFormat = DepthFormat.None,
-                SynchronizeWithVerticalRetrace = true
-            };
+            _graphicsDeviceManager = new GraphicsDeviceManager(this);
+        }
 
-            Position = new Vector2(0, 0);
-            HudPosition = new Vector2(ScreenWidth / 2 - 64, ScreenHeight - 128);
+        protected override void OnActivated(object sender, EventArgs args)
+        {
+            this.Window.Title = "End of Heroes";
+            base.OnActivated(sender, args);
+        }
+
+        protected override void OnDeactivated(object sender, EventArgs args)
+        {
+            this.Window.Title = "(PAUSED)End of Heroes";
+            base.OnDeactivated(sender, args);
         }
 
         protected override void Initialize()
         {
+            position = new Vector2(0, 0);
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            entityFactory = new EntityFactory();
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            font = Content.Load<BitmapFont>("montserrat-32");
-
-            _world = new WorldBuilder()
-                .AddSystem(new HealthBarRenderSystem(spriteBatch, font))
-                .AddSystem(new HudRenderSystem(GraphicsDevice, spriteBatch, font))
-                .AddSystem(new PlayerControlSystem(entityFactory))
-                .AddSystem(new RenderSystem(spriteBatch, Content))
-                .Build();
-
-            entityFactory.World = _world;
-
-            InitializePlayer();
+            texture = this.Content.Load<Texture2D>("ui-life-icon");
         }
 
         protected override void UnloadContent()
         {
+            texture.Dispose();
             base.UnloadContent();
         }
 
         protected override void Update(GameTime gameTime)
         {
+            if (!IsActive) return; // pauses game logic when not in focus
             var keyboard = Keyboard.GetState();
 
             if (keyboard.IsKeyDown(Keys.Escape))
                 Exit();
 
-            _framesPerSecondCounter.Update(gameTime);
-            _world.Update(gameTime);
+            position.X += 60f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (position.X > this.GraphicsDevice.Viewport.Width)
+                position.X = 0;
+
+            base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            _framesPerSecondCounter.Draw(gameTime);
-            var fps = $"FPS: {_framesPerSecondCounter.FramesPerSecond}";
-
             GraphicsDevice.Clear(Color.Black);
 
+            var framerate = 1 / gameTime.ElapsedGameTime.TotalSeconds;
+            Window.Title = framerate.ToString();
+
             spriteBatch.Begin();
-
-            _world.Draw(gameTime);
-
-            spriteBatch.DrawString(font, fps, new Vector2(16, 16), Color.White);
-
+            spriteBatch.Draw(texture, position, Color.White);
             spriteBatch.End();
-        }
 
-        private void InitializePlayer()
-        {
-            var viewport = GraphicsDevice.Viewport;
-
-            var entity = _world.CreateEntity();
-            entity.Attach(new Transform2(x: viewport.Width * 0.5f, y: viewport.Height - 50f));
-            entity.Attach(new SpatialFormComponent { SpatialFormFile = "Player" });
-            entity.Attach(new PlayerComponent());
+            base.Draw(gameTime);
         }
     }
 }
